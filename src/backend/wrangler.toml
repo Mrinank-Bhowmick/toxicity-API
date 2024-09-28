@@ -1,13 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "backend"
+name = "toxicity"
 main = "src/index.ts"
 compatibility_date = "2024-09-25"
 compatibility_flags = ["nodejs_compat"]
-exclude = ["seed"]
 
 [[vectorize]]
-binding = "VECTORIZE_INDEX"
-index_name = "toxicity"
+binding = "VECTORIZE"
+index_name = "toxicity-api"
 
 [ai]
 binding = "AI"
