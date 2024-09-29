@@ -41,58 +41,64 @@ app.post('/', async (c) => {
 			.split(/\b/)
 			.filter((word) => {
 				const cleanedWord = word.replace(/[^a-zA-Z]/g, '').toLowerCase();
-				return !WHITELIST.includes(cleanedWord);
+				return cleanedWord.length > 0 && !WHITELIST.includes(cleanedWord);
 			})
-			.join('');
+			.join(' ')
+			.replace(/\s+/g, ' '); // Replace multiple spaces with a single space.
 
 		const [wordChunks, semanticChunks] = await Promise.all([splitTextIntoWords(message), splitTextIntoSemantics(message)]);
 
 		const flaggedFor = new Set<{ score: number; text: string }>();
 		const lowerScoreWords = new Set<{ score: number; text: string }>();
 
-		for (const wordChunk of wordChunks) {
+		for (let i = 0; i < wordChunks.length; i = i + 100) {
 			const queryVector: EmbeddingResponse = await c.env.AI.run('@cf/baai/bge-base-en-v1.5', {
-				text: [wordChunk],
+				text: wordChunks.slice(i, i + 100),
 			});
-			const matches = await c.env.VECTORIZE.query(queryVector.data[0], {
-				topK: 1,
-				returnMetadata: true,
-			});
-			const matchedChunkObject = matches.matches[0];
+			//console.log(queryVector);
+			for (let j = 0; j < queryVector.data.length; j++) {
+				const matches = await c.env.VECTORIZE.query(queryVector.data[j], {
+					topK: 1,
+					returnMetadata: true,
+				});
+				const matchedChunkObject = matches.matches[0];
 
-			if (matchedChunkObject.score > 0.93) {
-				flaggedFor.add({
-					text: matchedChunkObject.metadata!.word as string,
-					score: matchedChunkObject.score,
-				});
-			} else {
-				lowerScoreWords.add({
-					text: matchedChunkObject.metadata!.word as string,
-					score: matchedChunkObject.score,
-				});
+				if (matchedChunkObject.score > 0.93) {
+					flaggedFor.add({
+						text: matchedChunkObject.metadata!.word as string,
+						score: matchedChunkObject.score,
+					});
+				} else {
+					lowerScoreWords.add({
+						text: matchedChunkObject.metadata!.word as string,
+						score: matchedChunkObject.score,
+					});
+				}
 			}
 		}
 
-		for (const semanticChunk of semanticChunks) {
+		for (let i = 0; i < semanticChunks.length; i = i + 100) {
 			const queryVector: EmbeddingResponse = await c.env.AI.run('@cf/baai/bge-base-en-v1.5', {
-				text: [semanticChunk],
+				text: semanticChunks.slice(i, i + 100),
 			});
-			const matches = await c.env.VECTORIZE.query(queryVector.data[0], {
-				topK: 1,
-				returnMetadata: true,
-			});
-			const matchedChunkObject = matches.matches[0];
+			for (let j = 0; j < queryVector.data.length; j++) {
+				const matches = await c.env.VECTORIZE.query(queryVector.data[j], {
+					topK: 1,
+					returnMetadata: true,
+				});
+				const matchedChunkObject = matches.matches[0];
 
-			if (matchedChunkObject.score > 0.85) {
-				flaggedFor.add({
-					text: matchedChunkObject.metadata!.word as string,
-					score: matchedChunkObject.score,
-				});
-			} else {
-				lowerScoreWords.add({
-					text: matchedChunkObject.metadata!.word as string,
-					score: matchedChunkObject.score,
-				});
+				if (matchedChunkObject.score > 0.85) {
+					flaggedFor.add({
+						text: matchedChunkObject.metadata!.word as string,
+						score: matchedChunkObject.score,
+					});
+				} else {
+					lowerScoreWords.add({
+						text: matchedChunkObject.metadata!.word as string,
+						score: matchedChunkObject.score,
+					});
+				}
 			}
 		}
 
