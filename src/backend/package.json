@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@langchain/cloudflare": "^0.1.0",
 		"@langchain/core": "^0.3.3",
-		"hono": "^4.6.3"
+		"hono": "^4.6.3",
+		"langchain": "^0.3.2"
 	}
 }
