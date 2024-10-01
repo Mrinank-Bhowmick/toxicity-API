@@ -1,14 +1,23 @@
-import PostRequest from "@/components/postRequest";
+import CodeSnippet from "@/components/CodeSnippet";
+import { HeroSection } from "@/components/heroSection";
+import Navbar from "@/components/navbar";
 import React from "react";
 
 const Page = () => {
   return (
-    <div className="h-screen">
-      <div className="flex justify-center text-3xl">
-        Detect Toxicity In Sentence
+    <>
+      <Navbar />
+      <HeroSection />
+      <div className="flex flex-col items-center justify-center w-full bg-neutral-400">
+        <div className="font-bold text-3xl text-center mt-5 mb-5">
+          Make an API request
+        </div>
+        <div>
+          <CodeSnippet />
+        </div>
+        <div className="h-[20vh]"></div>
       </div>
-      <PostRequest />
-    </div>
+    </>
   );
 };
 

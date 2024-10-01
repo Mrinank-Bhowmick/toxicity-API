@@ -19,49 +19,49 @@ export const BackgroundBeamsWithCollision = ({
       translateX: 10,
       duration: 7,
       repeatDelay: 3,
-      delay: 2,
+      delay: 1,
     },
     {
       initialX: 600,
       translateX: 600,
       duration: 3,
-      repeatDelay: 3,
-      delay: 4,
+      repeatDelay: 1,
+      delay: 1,
     },
     {
       initialX: 100,
       translateX: 100,
       duration: 7,
-      repeatDelay: 7,
+      repeatDelay: 1,
       className: "h-6",
     },
     {
       initialX: 400,
       translateX: 400,
       duration: 5,
-      repeatDelay: 14,
-      delay: 4,
+      repeatDelay: 1,
+      delay: 1,
     },
     {
       initialX: 800,
       translateX: 800,
       duration: 11,
-      repeatDelay: 2,
+      repeatDelay: 1,
       className: "h-20",
     },
     {
       initialX: 1000,
       translateX: 1000,
       duration: 4,
-      repeatDelay: 2,
+      repeatDelay: 1,
       className: "h-12",
     },
     {
       initialX: 1200,
       translateX: 1200,
       duration: 6,
-      repeatDelay: 4,
-      delay: 2,
+      repeatDelay: 1,
+      delay: 1,
       className: "h-6",
     },
   ];
@@ -70,7 +70,7 @@ export const BackgroundBeamsWithCollision = ({
     <div
       ref={parentRef}
       className={cn(
-        "h-96 md:h-[40rem] bg-gradient-to-b from-white to-neutral-100 dark:from-neutral-950 dark:to-neutral-800 relative flex items-center w-full justify-center overflow-hidden",
+        "md:h-screen h-[85vh] bg-gradient-to-b from-white via-neutral-200 to-neutral-400 dark:from-neutral-950 dark:to-neutral-800 relative flex items-center w-full justify-center overflow-hidden",
         // h-screen if you want bigger
         className
       )}
@@ -158,7 +158,7 @@ const CollisionMechanism = React.forwardRef<
     const animationInterval = setInterval(checkCollision, 50);
 
     return () => clearInterval(animationInterval);
-  }, [cycleCollisionDetected, containerRef]);
+  }, [cycleCollisionDetected, containerRef, parentRef]);
 
   useEffect(() => {
     if (collision.detected && collision.coordinates) {
