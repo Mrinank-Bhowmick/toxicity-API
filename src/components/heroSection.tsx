@@ -76,7 +76,7 @@ export function HeroSection() {
                     <div>
                       {ToxicityResult.isToxic
                         ? "Toxicity Detected"
-                        : "Minimal Toxicity Detected"}
+                        : "Clean Input"}
                     </div>
                     <div>Score (higher is worse): {ToxicityResult.score}</div>
                   </div>
