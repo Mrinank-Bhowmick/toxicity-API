@@ -23,6 +23,11 @@ export function HeroSection() {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     e.preventDefault;
+    //------ If prompt or input is empty
+    if(prompt.length === 0 ) {
+      alert("Prompt can not be empty") ;
+    }
+    
     setResult("Loading...");
     const res = fetch("https://toxicity.bhowmickmrinank.workers.dev/", {
       method: "POST",
