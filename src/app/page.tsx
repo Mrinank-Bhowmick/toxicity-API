@@ -1,6 +1,9 @@
+"use client";
 import CodeSnippet from "@/components/CodeSnippet";
 import { HeroSection } from "@/components/heroSection";
 import Navbar from "@/components/navbar";
+import AboutSection from "@/components/AboutSection";
+import Footer from "@/components/FooterSection";
 import React from "react";
 
 const Page = () => {
@@ -8,8 +11,12 @@ const Page = () => {
     <>
       <Navbar />
       <HeroSection />
-      <div className="flex flex-col items-center justify-center w-full bg-neutral-400">
-        <div className="font-bold text-3xl text-center mt-5 mb-5">
+      <AboutSection />
+      <div
+        className="flex flex-col items-center justify-center w-full bg-neutral-400"
+        id="api-reference"
+      >
+        <div className="font-bold text-4xl text-center mt-16 mb-10">
           Make an API request
         </div>
         <div>
@@ -17,6 +24,7 @@ const Page = () => {
         </div>
         <div className="h-[20vh]"></div>
       </div>
+      <Footer />
     </>
   );
 };

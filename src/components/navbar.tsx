@@ -9,6 +9,32 @@ const Navbar = () => {
         <div className="font-bold font-sans text-xl md:text-3xl text-white">
           Toxicity API
         </div>
+        <div className="md:flex items-center gap-2 hidden">
+          <Link
+            href={"#api-reference"}
+            className="px-2 py-1 bg-red-300 rounded-lg font-semibold text-sm flex items-center gap-1"
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .getElementById("api-reference")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            API Reference
+          </Link>
+          <Link
+            href={"#about-section"}
+            className="px-2 py-1 bg-red-300 rounded-lg font-semibold text-sm flex items-center gap-1"
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .getElementById("about-section")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            About
+          </Link>
+        </div>
         <Link
           href={"https://github.com/Mrinank-Bhowmick/toxicity-API"}
           target="_blank"
