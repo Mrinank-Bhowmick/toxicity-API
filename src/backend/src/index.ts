@@ -7,12 +7,15 @@ interface Bindings {
 	AI: Ai;
 	VECTORIZE: Vectorize;
 }
+
 interface EmbeddingResponse {
 	shape: number[];
 	data: number[][];
 }
 
-const WHITELIST = ['swear']; // List of whitelisted words in lowercase
+const WHITELIST = new Set(['swear']);
+const BATCH_SIZE = 50;
+
 const semanticSplitter = new RecursiveCharacterTextSplitter({
 	chunkSize: 10,
 	chunkOverlap: 1,
@@ -41,66 +44,30 @@ app.post('/', async (c) => {
 			.split(/\b/)
 			.filter((word) => {
 				const cleanedWord = word.replace(/[^a-zA-Z]/g, '').toLowerCase();
-				return cleanedWord.length > 0 && !WHITELIST.includes(cleanedWord);
+				return cleanedWord.length > 0 && !WHITELIST.has(cleanedWord);
 			})
 			.join(' ')
-			.replace(/\s+/g, ' '); // Replace multiple spaces with a single space.
+			.replace(/\s+/g, ' ');
 
 		const [wordChunks, semanticChunks] = await Promise.all([splitTextIntoWords(message), splitTextIntoSemantics(message)]);
+
+		const allChunks = [
+			...wordChunks.map((chunk) => ({ chunk, threshold: 0.93 })),
+			...semanticChunks.map((chunk) => ({ chunk, threshold: 0.85 })),
+		];
+
+		const allResults = await processAllChunksConcurrently(allChunks, c.env.AI, c.env.VECTORIZE);
 
 		const flaggedFor = new Set<{ score: number; text: string }>();
 		const lowerScoreWords = new Set<{ score: number; text: string }>();
 
-		for (let i = 0; i < wordChunks.length; i = i + 100) {
-			const queryVector: EmbeddingResponse = await c.env.AI.run('@cf/baai/bge-base-en-v1.5', {
-				text: wordChunks.slice(i, i + 100),
-			});
-			//console.log(queryVector);
-			for (let j = 0; j < queryVector.data.length; j++) {
-				const matches = await c.env.VECTORIZE.query(queryVector.data[j], {
-					topK: 1,
-					returnMetadata: true,
-				});
-				const matchedChunkObject = matches.matches[0];
-
-				if (matchedChunkObject.score > 0.93) {
-					flaggedFor.add({
-						text: matchedChunkObject.metadata!.word as string,
-						score: matchedChunkObject.score,
-					});
-				} else {
-					lowerScoreWords.add({
-						text: matchedChunkObject.metadata!.word as string,
-						score: matchedChunkObject.score,
-					});
-				}
+		allResults.forEach((result) => {
+			if (result.score > result.threshold) {
+				flaggedFor.add({ score: result.score, text: result.text });
+			} else {
+				lowerScoreWords.add({ score: result.score, text: result.text });
 			}
-		}
-
-		for (let i = 0; i < semanticChunks.length; i = i + 100) {
-			const queryVector: EmbeddingResponse = await c.env.AI.run('@cf/baai/bge-base-en-v1.5', {
-				text: semanticChunks.slice(i, i + 100),
-			});
-			for (let j = 0; j < queryVector.data.length; j++) {
-				const matches = await c.env.VECTORIZE.query(queryVector.data[j], {
-					topK: 1,
-					returnMetadata: true,
-				});
-				const matchedChunkObject = matches.matches[0];
-
-				if (matchedChunkObject.score > 0.85) {
-					flaggedFor.add({
-						text: matchedChunkObject.metadata!.word as string,
-						score: matchedChunkObject.score,
-					});
-				} else {
-					lowerScoreWords.add({
-						text: matchedChunkObject.metadata!.word as string,
-						score: matchedChunkObject.score,
-					});
-				}
-			}
-		}
+		});
 
 		if (flaggedFor.size > 0) {
 			const sorted = Array.from(flaggedFor).sort((a, b) => (a.score > b.score ? -1 : 1));
@@ -129,12 +96,51 @@ app.post('/', async (c) => {
 	}
 });
 
+const processAllChunksConcurrently = async (
+	chunks: { chunk: string; threshold: number }[],
+	ai: Ai,
+	vectorize: Vectorize
+): Promise<{ score: number; text: string; threshold: number }[]> => {
+	if (chunks.length === 0) return [];
+
+	const batches: { chunk: string; threshold: number }[][] = [];
+	for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+		batches.push(chunks.slice(i, i + BATCH_SIZE));
+	}
+
+	const embeddingPromises = batches.map(async (batch) => {
+		const texts = batch.map((item) => item.chunk);
+		const embedding: EmbeddingResponse = await ai.run('@cf/baai/bge-base-en-v1.5', { text: texts });
+		return { embedding, batch };
+	});
+
+	const embeddingResults = await Promise.all(embeddingPromises);
+
+	const allVectorQueries = embeddingResults.flatMap(({ embedding, batch }) =>
+		embedding.data.map(async (vector, index) => {
+			const matches = await vectorize.query(vector, {
+				topK: 1,
+				returnMetadata: true,
+			});
+			const matchedChunkObject = matches.matches[0];
+			return {
+				score: matchedChunkObject.score,
+				text: matchedChunkObject.metadata!.word as string,
+				threshold: batch[index].threshold,
+			};
+		})
+	);
+
+	return Promise.all(allVectorQueries);
+};
+
 const splitTextIntoWords = (message: string) => {
 	return message.split(' ');
 };
+
 const splitTextIntoSemantics = async (message: string) => {
 	if (message.split(' ').length === 1) {
-		return []; // no need to again check as we are already doing it in splitTextIntoWords
+		return [];
 	}
 
 	const documents = await semanticSplitter.createDocuments([message]);
