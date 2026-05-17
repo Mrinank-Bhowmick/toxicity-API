@@ -17,6 +17,8 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*", "test/**/*", "scripts/**/*"]
 }
