@@ -3,7 +3,9 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const CodeSnippet = () => {
-  const codeString = `const res = await fetch('https://toxicity.bhowmickmrinank.workers.dev/',{
+  const apiUrl =
+    process.env.NEXT_PUBLIC_TOXICITY_API_URL ?? "http://localhost:3001/";
+  const codeString = `const res = await fetch('${apiUrl}', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ message }),

@@ -1,6 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+
+const TOXICITY_API_URL =
+  process.env.NEXT_PUBLIC_TOXICITY_API_URL ?? "http://localhost:3001/";
+
 interface ToxicityResult {
   isToxic: boolean;
   score: number;
@@ -29,7 +33,7 @@ export function HeroSection() {
     }
     
     setResult("Loading...");
-    const res = fetch("https://toxicity.bhowmickmrinank.workers.dev/", {
+    const res = fetch(TOXICITY_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: prompt }),
@@ -54,8 +58,8 @@ export function HeroSection() {
                 <div className="bg-gray-800 text-white px-2 py-1 font-sans rounded-lg">
                   POST
                 </div>
-                <div className="md:text-normal text-sm">
-                  toxicity.bhowmickmrinank.workers.dev/
+                <div className="md:text-normal text-sm break-all">
+                  {TOXICITY_API_URL}
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-2 justify-between items-center mb-4">

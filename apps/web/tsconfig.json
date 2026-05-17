@@ -35,8 +35,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "src/backend/**"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+
+minimumReleaseAge: 10080
+strictDepBuilds: true
+preferFrozenLockfile: true
+blockExoticSubdeps: true
+allowBuilds:
+  '@nestjs/core': false
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
