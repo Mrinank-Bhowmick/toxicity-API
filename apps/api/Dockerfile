@@ -1,8 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.1.2 --activate
-COPY package.json ./
-COPY tsconfig*.json nest-cli.json ./
+COPY package.json tsconfig.json ./
 COPY src ./src
 RUN pnpm install --prod=false --frozen-lockfile=false
 RUN pnpm build
